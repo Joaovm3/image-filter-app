@@ -35,7 +35,7 @@ class MainWindow:
         self.current_image_index = image_index
         self.current_image = self.original_images[image_index].copy()
         self.image_viewer.update_images(self.original_images[image_index], self.current_image)
-        self.controls.contrast_scale.set(1.0)
+        self.reset_image()
     
     def switch_sobel_filter(self):
         self.filters['sobel'] = not self.filters['sobel']
