@@ -10,60 +10,57 @@ class MainWindow:
         
         self.file_manager = FileManager()
         self.original_images = self.file_manager.load_images()
-        self.current_image = self.original_images[0].copy()
-        
-        self.image_viewer = ImageViewer(
-            self.root, 
-            self.original_images[0], 
-            self.current_image, 
-            self.original_images
-        )
-        self.image_viewer.frame.pack(side=tk.TOP, padx=10, pady=10)
-        self.image_viewer.bind_preview_click(self.change_active_image)
-        
-        self.controls = Controls(self.root, self)
-        self.controls.frame.pack(side=tk.BOTTOM, padx=10, pady=10)
         self.current_image_index = 0
+        self.current_image = self.original_images[self.current_image_index].copy()
+
         self.filters = {
             'sobel': False,
             'median': False,
             'invert': False,
             'contrast': 1.0
         }
-    
+
+        self.image_viewer = ImageViewer(
+            self.root, 
+            self.original_images[self.current_image_index], 
+            self.current_image, 
+            self.original_images
+        )
+
+        self.controls = Controls(self.root, self)
+        self.controls.frame.pack(side=tk.BOTTOM, padx=10, pady=10)
+
+        self.image_viewer.frame.pack(side=tk.TOP, padx=10, pady=10)
+        self.image_viewer.bind_preview_click(self.change_active_image)
+        
     def change_active_image(self, image_index):
         self.current_image_index = image_index
-        self.current_image = self.original_images[image_index].copy()
-        self.image_viewer.update_images(self.original_images[image_index], self.current_image)
         self.reset_image()
-    
-    def switch_sobel_filter(self):
-        self.filters['sobel'] = not self.filters['sobel']
-        self.apply_filters()
+        
+    def change_filter(self, filter_name):
+        if filter_name in ['sobel', 'median', 'invert']:
+            self.filters[filter_name] = not self.filters[filter_name]
+            self.current_image = self.original_images[self.current_image_index].copy()
 
-    def switch_median_filter(self):
-        self.filters['median'] = not self.filters['median']
-        self.apply_filters()
+            if self.filters['sobel']:
+                self.apply_sobel_filter()
+            if self.filters['median']:
+                self.apply_median_filter()
+            if self.filters['invert']:
+                self.invert_colors()
+            if self.filters['contrast'] != 1.0:
+                self.adjust_contrast(self.filters['contrast'])
 
-    def switch_invert_colors(self):
-        self.filters['invert'] = not self.filters['invert']
-        self.apply_filters()
+            self.image_viewer.update_modified_image(self.current_image)
 
-    def switch_adjust_contrast(self, value):
-        self.filters['contrast'] = value
-        self.apply_filters()
+        elif filter_name == 'contrast':
+            self.filters['contrast'] = float(self.controls.contrast_scale.get())
 
-    def apply_filters(self):
-        self.current_image = self.original_images[self.current_image_index].copy()
-        if self.filters.get('sobel'):
-            self.apply_sobel_filter()
-        if self.filters.get('median'):
-            self.apply_median_filter()
-        if self.filters.get('invert'):
-            self.invert_colors()
-        if 'contrast' in self.filters:
-            self.adjust_contrast(self.filters['contrast'])
-        self.image_viewer.update_modified_image(self.current_image)
+            temp_image = self.current_image.copy()
+            from core.image_processor import ImageProcessor
+            temp_image = ImageProcessor.adjust_contrast(temp_image, self.filters['contrast'])
+
+            self.image_viewer.update_modified_image(temp_image)
 
     def apply_sobel_filter(self):
         from core.image_processor import ImageProcessor
@@ -87,8 +84,8 @@ class MainWindow:
 
     def reset_image(self):
         self.current_image = self.original_images[self.current_image_index].copy()
+        self.image_viewer.update_images(self.current_image, self.current_image)
         self.controls.contrast_scale.set(1.0)
-        self.image_viewer.update_modified_image(self.current_image)
         self.filters = {
             'sobel': False,
             'median': False,
