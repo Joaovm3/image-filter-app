@@ -20,3 +20,6 @@ class Controls:
         
         self.save_button = tk.Button(self.frame, text="Save Image", command=self.main_window.save_modified_image)
         self.save_button.pack(side=tk.LEFT, padx=5)
+
+        self.reset_button = tk.Button(self.frame, text="Reset Image", command=self.main_window.reset_image)
+        self.reset_button.pack(side=tk.LEFT, padx=5)

@@ -40,3 +40,7 @@ class MainWindow:
     
     def save_modified_image(self):
         self.file_manager.save_image(self.current_image)
+
+    def reset_image(self):
+        self.current_image = self.original_images[0].copy()
+        self.image_viewer.update_modified_image(self.current_image)
