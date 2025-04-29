@@ -76,3 +76,4 @@ class MainWindow:
 
     def save_modified_image(self):
         self.file_manager.save_image(self.current_image)
+        

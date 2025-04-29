@@ -7,21 +7,25 @@ class ImageViewer:
         self.frame = tk.Frame(root)
         self.frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        self.frame.columnconfigure(0, weight=1)
+        self.frame.columnconfigure(0, weight=0)
         self.frame.columnconfigure(1, weight=1)
+        self.frame.columnconfigure(2, weight=1)
         self.frame.rowconfigure(0, weight=1)
 
+        self.side_menu = tk.Frame(self.frame)
+        self.side_menu.grid(row=0, column=0, sticky="ns", padx=(0, 10))
+
+        self.preview_frame = tk.Frame(self.side_menu)
+        self.preview_frame.pack(fill=tk.Y, expand=True)
+
         self.left_frame = tk.Frame(self.frame)
-        self.left_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        self.left_frame.grid(row=0, column=1, sticky="nsew", padx=(0, 10))
 
         self.original_label = tk.Label(self.left_frame)
-        self.original_label.pack(pady=(0, 10))
+        self.original_label.pack(expand=True)
 
-        self.preview_frame = tk.Frame(self.left_frame)
-        self.preview_frame.pack()
-        
         self.modified_label = tk.Label(self.frame)
-        self.modified_label.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        self.modified_label.grid(row=0, column=2, sticky="nsew", padx=(10, 0))
 
         self.preview_labels = []
         if preview_images:
@@ -36,7 +40,7 @@ class ImageViewer:
             preview_tk = ImageTk.PhotoImage(preview)
             preview_label = tk.Label(self.preview_frame, image=preview_tk)
             preview_label.image = preview_tk
-            preview_label.grid(row=i // 4, column=i % 4, padx=5, pady=5)
+            preview_label.grid(row=i, column=0, padx=5, pady=5, sticky="n")
             self.preview_labels.append(preview_label)
 
     def update_images(self, original_image, modified_image):
