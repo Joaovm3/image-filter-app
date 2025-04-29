@@ -12,6 +12,7 @@ class MainWindow:
         self.original_images = self.file_manager.load_images()
         self.current_image_index = 0
         self.current_image = self.original_images[self.current_image_index].copy()
+        self.current_image_without_contrast = self.current_image.copy()
 
         self.filters = {
             'sobel': False,
@@ -38,52 +39,32 @@ class MainWindow:
         self.reset_image()
         
     def change_filter(self, filter_name):
+        from core.image_processor import ImageProcessor
+
         if filter_name in ['sobel', 'median', 'invert']:
             self.filters[filter_name] = not self.filters[filter_name]
             self.current_image = self.original_images[self.current_image_index].copy()
 
             if self.filters['sobel']:
-                self.apply_sobel_filter()
+                self.current_image = ImageProcessor.apply_sobel(self.current_image)
             if self.filters['median']:
-                self.apply_median_filter()
+                self.current_image = ImageProcessor.apply_median(self.current_image)
             if self.filters['invert']:
-                self.invert_colors()
+                self.current_image = ImageProcessor.invert_colors(self.current_image)
+            self.current_image_without_contrast = self.current_image.copy()
             if self.filters['contrast'] != 1.0:
-                self.adjust_contrast(self.filters['contrast'])
-
-            self.image_viewer.update_modified_image(self.current_image)
+                self.current_image = ImageProcessor.adjust_contrast(self.current_image, self.filters['contrast'])
 
         elif filter_name == 'contrast':
             self.filters['contrast'] = float(self.controls.contrast_scale.get())
+            temp_image = self.current_image_without_contrast.copy()
+            self.current_image = ImageProcessor.adjust_contrast(temp_image, self.filters['contrast'])
 
-            temp_image = self.current_image.copy()
-            from core.image_processor import ImageProcessor
-            temp_image = ImageProcessor.adjust_contrast(temp_image, self.filters['contrast'])
-
-            self.image_viewer.update_modified_image(temp_image)
-
-    def apply_sobel_filter(self):
-        from core.image_processor import ImageProcessor
-        self.current_image = ImageProcessor.apply_sobel(self.current_image)
-        
-    
-    def apply_median_filter(self):
-        from core.image_processor import ImageProcessor
-        self.current_image = ImageProcessor.apply_median(self.current_image)
-    
-    def invert_colors(self):
-        from core.image_processor import ImageProcessor
-        self.current_image = ImageProcessor.invert_colors(self.current_image)
-    
-    def adjust_contrast(self, value):
-        from core.image_processor import ImageProcessor
-        self.current_image = ImageProcessor.adjust_contrast(self.current_image, float(value))
-
-    def save_modified_image(self):
-        self.file_manager.save_image(self.current_image)
+        self.image_viewer.update_modified_image(self.current_image)
 
     def reset_image(self):
         self.current_image = self.original_images[self.current_image_index].copy()
+        self.current_image_without_contrast = self.current_image.copy()
         self.image_viewer.update_images(self.current_image, self.current_image)
         self.controls.contrast_scale.set(1.0)
         self.filters = {
@@ -92,3 +73,6 @@ class MainWindow:
             'invert': False,
             'contrast': 1.0
         }
+
+    def save_modified_image(self):
+        self.file_manager.save_image(self.current_image)
